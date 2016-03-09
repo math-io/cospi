@@ -4,9 +4,11 @@
 
 var tape = require( 'tape' );
 var incrspace = require( 'compute-incrspace' );
-var pinf = require( 'const-pinf-float64' );
-var ninf = require( 'const-ninf-float64' );
+var PINF = require( 'const-pinf-float64' );
+var NINF = require( 'const-ninf-float64' );
+var EPS = require( 'const-eps-float64' );
 var abs = require( 'math-abs' );
+var pow = require( 'math-power' );
 var cospi = require( './../lib/' );
 
 
@@ -29,10 +31,10 @@ tape( 'the function throws a range error if provided either positive or negative
 	t.end();
 
 	function foo() {
-		cospi( pinf );
+		cospi( PINF );
 	}
 	function bar() {
-		cospi( ninf );
+		cospi( NINF );
 	}
 });
 
@@ -57,15 +59,28 @@ tape( 'if provided an integer, the function returns `+-1.0`', function test( t )
 	t.end();
 });
 
-tape( 'the function returns `0` for any value with fractional part equal to 1/2', function test( t ) {
-	var x = incrspace( 0.5, 100.5, 1 );
+tape( 'if provided a value exceeding `2**53` (max (unsafe) float64 integer), the function always returns `+1.0`', function test( t ) {
+	var x;
 	var y;
 	var i;
 
+	x = pow( 2, 53 ) + 1.0;
+	for ( i = 0; i < 100; i++ ) {
+		y = cospi( x+i );
+		t.equal( y, 1.0, 'returns 1.0' );
+	}
+});
+
+tape( 'the function returns `0` for any value with fractional part equal to 1/2', function test( t ) {
+	var x;
+	var y;
+	var i;
+
+	x = incrspace( 0.5, 100.5, 1.0 );
 	for ( i = 0; i < x.length; i++ ) {
 		y = cospi( x[i] );
-		if ( y === 0 ) {
-			t.equal( y, 0, 'x: '+x[i]+'. Expected: 0' );
+		if ( y === 0.0 ) {
+			t.equal( y, 0.0, 'x: '+x[i]+'. Expected: 0' );
 		}
 	}
 	t.end();
@@ -74,7 +89,6 @@ tape( 'the function returns `0` for any value with fractional part equal to 1/2'
 tape( 'the function computes `cos(πx)`', function test( t ) {
 	var expected;
 	var delta;
-	var tol;
 	var x;
 	var y;
 	var i;
@@ -87,8 +101,7 @@ tape( 'the function computes `cos(πx)`', function test( t ) {
 			t.equal( y, expected[ i ], 'x: '+x[i]+'. Expected: '+expected[i] );
 		} else {
 			delta = abs( y - expected[i] );
-			tol = 1e-15 * Math.max( 1, abs( y ), abs( expected[i] ) );
-			t.ok( delta <= tol, 'within tolerance. x: '+x[i]+'. Value: '+y+'. Expected: '+expected[i]+'. Tolerance: '+tol+'.' );
+			t.ok( delta <= EPS, 'within tolerance. x: '+x[i]+'. Value: '+y+'. Expected: '+expected[i]+'. Tolerance: '+EPS+'.' );
 		}
 	}
 	t.end();
