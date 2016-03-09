@@ -69,6 +69,7 @@ tape( 'if provided a value exceeding `2**53` (max (unsafe) float64 integer), the
 		y = cospi( x+i );
 		t.equal( y, 1.0, 'returns 1.0' );
 	}
+	t.end();
 });
 
 tape( 'the function returns `0` for any value with fractional part equal to 1/2', function test( t ) {
