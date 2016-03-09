@@ -1,6 +1,6 @@
 {
   "name": "math-cospi",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Computes cos(πx).",
   "author": {
     "name": "Philipp Burckhardt",
